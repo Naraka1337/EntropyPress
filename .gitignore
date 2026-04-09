@@ -1,0 +1,28 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+env/
+.env
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific: Compiled outputs if you don't want them tracked
+# Uncomment if you want to keep data clean
+# *.huffman
+# *.lzw
+# *.noisy
+# *.dec
+# datasets/image.bmp
+
+# OS files
+.DS_Store
+Thumbs.db

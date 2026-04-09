@@ -1,0 +1,4 @@
+Information Theory and Data Compression is a fundamental subject in computer science.
+This file contains regular english sentences with varying frequencies of characters.
+This ensures it represents a typical uncompressed text document profile.
+The Entropy H(X) should be around 4-5 bits per symbol.
