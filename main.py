@@ -11,9 +11,24 @@ from utils.entropy import calculate_entropy
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
 
+import sys
+
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
+        
+        # Load Icon
+        try:
+            if getattr(sys, 'frozen', False):
+                # If running as EXE, look in the temp folder where PyInstaller extracts
+                icon_path = os.path.join(sys._MEIPASS, "Icon.ico")
+            else:
+                icon_path = "Icon.ico"
+            
+            if os.path.exists(icon_path):
+                self.iconbitmap(icon_path)
+        except Exception:
+            pass # Silent fail if icon is missing
 
         self.title("EntropyPress Pro - v1.0.0")
         self.geometry("1000x750")
