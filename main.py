@@ -105,7 +105,10 @@ class App(ctk.CTk):
             messagebox.showerror("Error", "Please select a file first.")
             return
         threading.Thread(target=self.do_decompress, args=(fp,)).start()
-
+    def do_compress(self, filepath):
+        self.btn_compress.configure(state="disabled")
+        self.btn_decompress.configure(state="disabled")
+        try:
             self.status_label.configure(text="Processing...", text_color="orange")
             self.progress_bar.start()
             
