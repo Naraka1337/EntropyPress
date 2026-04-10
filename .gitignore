@@ -15,18 +15,24 @@ env/
 *.swp
 *.swo
 
-# Project specific: Compiled outputs if you don't want them tracked
-# Uncomment if you want to keep data clean
-# *.huffman
-# *.lzw
-# *.noisy
-# *.dec
-# datasets/image.bmp
+# Project specific
+*.huffman
+*.lzw
+*.huffman_noisy
+*.lzw_noisy
+*.dec
+datasets/image.bmp
+
+# PyInstaller & EXE Build
+build/
+dist/
+*.spec
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# CodeBase
+# CodeBase Extras
 full_codebase.txt
 test_all.py
+Icon.ico
