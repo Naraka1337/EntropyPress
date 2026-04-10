@@ -1,56 +1,37 @@
-# EntropyPress
+# EntropyPress Pro
 
-A compression utility implementing Huffman and LZW algorithms from scratch. Built for Information Theory and Data Compression (Spring 2026).
+A high-fidelity data compression and transmission simulator. This project was built to explore the fundamentals of **Information Theory** and **Lossless Data Compression**.
 
-## Overview
-EntropyPress provides a standalone environment for testing lossless compression and error correction models. It bypasses all external libraries to implement core coding logic directly.
+> [!NOTE]
+> **Educational Project:** This tool is designed for learning and demonstration. While it implements industry-standard algorithms from scratch, it prioritizes code readability and mathematical transparency over industrial high-speed performance.
 
-### Core Features
-*   **Huffman Coding:** Variable-length prefix codes with bit-packed tree serialization.
-*   **Adaptive LZW:** 9-12 bit variable-length token dictionary with automated resets (Clear Codes).
-*   **Information Metrics:** Real-time Shannon Entropy $H(X)$ calculation.
-*   **Robustness Simulation:** Hamming (7,4) ECC passed through a tuned Binary Symmetric Channel (BSC).
+## 🎓 Why this was built
+EntropyPress was developed to bypass the "black box" of modern compression libraries. By implementing Huffman and LZW logic from the ground up, we can observe the relationship between **Shannon Entropy $H(X)$** and actual bit-reduction in real-time.
 
-## Implementation Details
+## 🚀 Realistic Use Cases
+While modern tools like 7-Zip dominate consumer PCs, the logic in EntropyPress is still the backbone of:
+*   **Embedded Systems:** Resource-constrained environments where complex libraries are too heavy.
+*   **Satellite & LoRa Communication:** Where simple bit-level ECC (Hamming) is essential for noisy long-range links.
+*   **Legacy Data Formats:** Understanding the foundations of GIF (LZW) and JPEG/MP3 (Huffman/DCT) encoding.
 
-### 1. Huffman Serialization
-To minimize overhead on small files, the Huffman implementation uses a pre-order tree bit-stream:
-- `0` for internal nodes.
-- `1` followed by `8 bits` for leaf characters.
-- Followed by the compressed payload and an 8-byte original size header.
+## 🛠️ Core Features
+*   **Huffman Coding:** Manual tree construction and bit-packed serialization.
+*   **Adaptive LZW:** Variable 9-12 bit tokenization with automated dictionary resets.
+*   **Noisy Channel Simulation:** A Binary Symmetric Channel (BSC) to test robustness.
+*   **Error Correction (ECC):** Hamming (7,4) logic for bit-level data recovery.
 
-### 2. Adaptive LZW
-The LZW implementation handles dictionary expansion by monitoring the current bit-depth:
-- Starts at 9 bits.
-- Scales to 12 bits as the dictionary fills.
-- Emits a **Clear Code (256)** and resets when the 4096-entry limit is reached, allowing it to adapt to local data patterns.
-
-### 3. Error Correction Pipeline
-1. **Compress:** File is reduced via Huffman/LZW.
-2. **FEC Encode:** Encoded into Hamming (7,4) blocks.
-3. **Channel:** Passed through a noisy environment (bit-flip probability).
-4. **Correction:** Syndrome analysis detects and fixes bit errors.
-5. **Decompress:** Original file restoration.
+## 📊 Educational vs. Industrial
+| Feature | EntropyPress (Educational) | 7-Zip / Zstandard (Industrial) |
+| :--- | :--- | :--- |
+| **Logic** | Pure Huffman / LZW | Multi-stage (LZ77 + Range Coding) |
+| **I/O** | Atomic (File-in-RAM) | Streamed (Sliding Windows) |
+| **ECC** | Hamming (7,4) | Reed-Solomon / LDPC |
+| **Target** | Transparency & Learning | Max Speed & Density |
 
 ## Usage
-
-### Setup
-```bash
-pip install -r requirements.txt
-```
-
-### Run
-```bash
-python main.py
-```
-
-## Datasets
-- `sample.txt`: Text data for character distribution testing.
-- `repetitive.txt`: High-redundancy data for LZW benchmarking.
-- `image.bmp`: Binary structure testing for spatial pattern compression.
-
-## Performance Analysis
-Performance metrics (Entropy, Speed, Ratio) are logged in the GUI and exported to `test_report.md`.
+1. `pip install -r requirements.txt`
+2. `python main.py`
+3. Select a dataset from `/datasets` and experiment with the Noise probability.
 
 ## License
 MIT
