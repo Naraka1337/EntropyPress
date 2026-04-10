@@ -1,4 +1,4 @@
-# EntropyPress Pro
+# EntropyPress
 
 A data compression and transmission simulation utility focused on Information Theory and Lossless Data Compression.
 
