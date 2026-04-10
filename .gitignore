@@ -27,6 +27,8 @@ datasets/image.bmp
 build/
 dist/
 *.spec
+_tcl_data/
+_tk_data/
 EntropyPress_v1.0.0_Win64/
 README_DIST.txt
 
