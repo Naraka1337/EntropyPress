@@ -27,6 +27,8 @@ datasets/image.bmp
 build/
 dist/
 *.spec
+EntropyPress_v1.0.0_Win64/
+README_DIST.txt
 
 # OS files
 .DS_Store
@@ -36,3 +38,4 @@ Thumbs.db
 full_codebase.txt
 test_all.py
 Icon.ico
+Icon.png
