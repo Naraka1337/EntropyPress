@@ -15,13 +15,20 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Data Compression & Info Theory")
-        self.geometry("900x650")
+        self.title("EntropyPress Pro - v1.0.0")
+        self.geometry("1000x750")
         
         self.grid_columnconfigure((0, 1), weight=1)
         
-        self.title_label = ctk.CTkLabel(self, text="EntropyPress", font=ctk.CTkFont(size=24, weight="bold"))
-        self.title_label.grid(row=0, column=0, columnspan=2, padx=20, pady=(20, 10))
+        # Header with Version
+        self.header_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.header_frame.grid(row=0, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="ew")
+        
+        self.title_label = ctk.CTkLabel(self.header_frame, text="EntropyPress", font=ctk.CTkFont(size=28, weight="bold"))
+        self.title_label.pack(side="left")
+        
+        self.ver_label = ctk.CTkLabel(self.header_frame, text="v1.0.0", font=ctk.CTkFont(size=12))
+        self.ver_label.pack(side="left", padx=10, pady=(10, 0))
         
         self.file_frame = ctk.CTkFrame(self)
         self.file_frame.grid(row=1, column=0, columnspan=2, padx=20, pady=10, sticky="ew")
@@ -59,8 +66,19 @@ class App(ctk.CTk):
         self.results_frame.grid(row=4, column=0, columnspan=2, padx=20, pady=10, sticky="nsew")
         self.grid_rowconfigure(4, weight=1)
         
-        self.results_text = ctk.CTkTextbox(self.results_frame, state="disabled")
+        self.results_text = ctk.CTkTextbox(self.results_frame, state="disabled", font=ctk.CTkFont(family="Consolas", size=13))
         self.results_text.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Progress & Status Bar
+        self.status_frame = ctk.CTkFrame(self, height=30)
+        self.status_frame.grid(row=5, column=0, columnspan=2, padx=20, pady=(0, 20), sticky="ew")
+        
+        self.progress_bar = ctk.CTkProgressBar(self.status_frame, mode="indeterminate", height=10)
+        self.progress_bar.pack(side="top", fill="x", padx=10, pady=(5, 2))
+        self.progress_bar.set(0)
+        
+        self.status_label = ctk.CTkLabel(self.status_frame, text="System Ready", font=ctk.CTkFont(size=12, slant="italic"))
+        self.status_label.pack(side="bottom", anchor="w", padx=15, pady=2)
         
     def log(self, msg):
         self.results_text.configure(state="normal")
@@ -88,19 +106,21 @@ class App(ctk.CTk):
             return
         threading.Thread(target=self.do_decompress, args=(fp,)).start()
 
-    def do_compress(self, filepath):
-        self.btn_compress.configure(state="disabled")
-        self.btn_decompress.configure(state="disabled")
-        try:
-            self.log(f"--- Starting Compression on {os.path.basename(filepath)} ---")
+            self.status_label.configure(text="Processing...", text_color="orange")
+            self.progress_bar.start()
             
+            self.log(f"--- [TASK] Compression: {os.path.basename(filepath)} ---")
+            
+            if not os.path.exists(filepath):
+                raise FileNotFoundError(f"Source file not found: {filepath}")
+
             with open(filepath, "rb") as f:
                 data = f.read()
                 
             orig_size = len(data)
             entropy = calculate_entropy(data)
-            self.log(f"Original Size: {orig_size} bytes")
-            self.log(f"Entropy H(X): {entropy:.4f} bits/symbol")
+            self.log(f"[*] Original Size: {orig_size:,} bytes")
+            self.log(f"[*] Shannon Entropy: {entropy:.4f} bits/symbol")
             
             algo = self.algo_var.get()
             t0 = time.time()
@@ -111,40 +131,43 @@ class App(ctk.CTk):
             t1 = time.time()
             
             comp_size = len(comp_data)
+            elapsed = (t1-t0)*1000
+            
             if comp_size == 0:
-                self.log(f"Compressed Size: 0 bytes. Original was empty.")
+                self.log(f"[!] Warning: Compressed file is empty.")
             else:
-                self.log(f"Compressed Size ({algo}): {comp_size} bytes")
-                self.log(f"Compression Ratio: {(orig_size/comp_size if comp_size > 0 else 0):.2f}:1")
-            self.log(f"Execution Time: {(t1-t0)*1000:.2f} ms")
+                ratio = (orig_size/comp_size if comp_size > 0 else 0)
+                self.log(f"[*] Algorithm: {algo}")
+                self.log(f"[*] Compressed Size: {comp_size:,} bytes")
+                self.log(f"[*] Compression Ratio: {ratio:.2f}:1")
+            self.log(f"[*] Time Elapsed: {elapsed:.2f} ms")
             
             if self.bonus_var.get():
-                self.log("\n[BONUS] Applying Hamming (7,4) Error Correction Encoding...")
-                t_enc_0 = time.time()
+                self.log("\n[BONUS] Applying Hamming (7,4) ECC...")
                 enc_data = hamming.encode(comp_data)
-                t_enc_1 = time.time()
                 
-                self.log(f"[BONUS] Encoding Time: {(t_enc_1-t_enc_0)*1000:.2f} ms")
-                self.log(f"[BONUS] Encoded Payload Size: {len(enc_data)} bytes")
-                
-                self.log("[BONUS] Simulating Binary Symmetric Channel (Noise=0.01)...")
+                self.log("[BONUS] Simulating BSC (p=0.01)...")
                 noisy_data = noise.binary_symmetric_channel(enc_data, 0.01)
                 
                 out_path = filepath + f".{algo.lower()}_noisy"
                 with open(out_path, "wb") as f:
                     f.write(noisy_data)
-                self.log(f"Saved NOISY compressed file to: {os.path.basename(out_path)}")
             else:
                 out_path = filepath + f".{algo.lower()}"
                 with open(out_path, "wb") as f:
                     f.write(comp_data)
-                self.log(f"Saved securely compressed file to: {os.path.basename(out_path)}")
-                
-            self.log("Compression Complete!\n")
+            
+            self.status_label.configure(text="Compression Successful!", text_color="green")
+            self.log(f"\n[SUCCESS] File saved as: {os.path.basename(out_path)}")
+            messagebox.showinfo("Success", f"Compression complete!\nSaved to: {os.path.basename(out_path)}")
             
         except Exception as e:
-            self.log(f"ERROR: {str(e)}")
+            self.status_label.configure(text="Error occurred", text_color="red")
+            self.log(f"[ERROR] {str(e)}")
+            messagebox.showerror("Production Error", f"An error occurred during compression:\n{str(e)}")
         finally:
+            self.progress_bar.stop()
+            self.progress_bar.set(0)
             self.btn_compress.configure(state="normal")
             self.btn_decompress.configure(state="normal")
 
@@ -152,21 +175,24 @@ class App(ctk.CTk):
         self.btn_compress.configure(state="disabled")
         self.btn_decompress.configure(state="disabled")
         try:
-            self.log(f"--- Starting Decompression on {os.path.basename(filepath)} ---")
+            self.status_label.configure(text="Decoding...", text_color="orange")
+            self.progress_bar.start()
             
+            self.log(f"--- [TASK] Decompression: {os.path.basename(filepath)} ---")
+            
+            if not os.path.exists(filepath):
+                raise FileNotFoundError(f"Source file not found: {filepath}")
+
             with open(filepath, "rb") as f:
                 data = f.read()
 
-            self.log(f"Input file size: {len(data)} bytes")
+            self.log(f"[*] Encoded Size: {len(data):,} bytes")
                 
             comp_data = data
             if self.bonus_var.get():
-                self.log("\n[BONUS] Decoding Hamming (7,4) and Correcting Errors...")
-                t_dec_0 = time.time()
+                self.log("\n[BONUS] ECC Decoding...")
                 comp_data, errors_corrected = hamming.decode(data)
-                t_dec_1 = time.time()
-                self.log(f"[BONUS] Decoding Time: {(t_dec_1-t_dec_0)*1000:.2f} ms")
-                self.log(f"[BONUS] Number of bit errors corrected: {errors_corrected}")
+                self.log(f"[BONUS] Bit errors corrected: {errors_corrected}")
             
             algo = self.algo_var.get()
             t0 = time.time()
@@ -176,21 +202,24 @@ class App(ctk.CTk):
                 decomp_data = lzw.decompress(comp_data)
             t1 = time.time()
             
-            self.log(f"Decompressed Size: {len(decomp_data)} bytes")
-            self.log(f"Decompression Execution Time: {(t1-t0)*1000:.2f} ms")
+            self.log(f"[*] Decompressed Size: {len(decomp_data):,} bytes")
+            self.log(f"[*] Time Elapsed: {(t1-t0)*1000:.2f} ms")
             
             out_path = filepath + ".dec"
             with open(out_path, "wb") as f:
                 f.write(decomp_data)
-            self.log(f"Saved decompressed file to: {os.path.basename(out_path)}")
-                
-            self.log("Decompression Complete!\n")
             
+            self.status_label.configure(text="Decompression Successful!", text_color="green")
+            self.log(f"\n[SUCCESS] File recovered to: {os.path.basename(out_path)}")
+            messagebox.showinfo("Success", f"Decompression complete!\nRestored: {os.path.basename(out_path)}")
+                
         except Exception as e:
-            import traceback
-            traceback.print_exc()
-            self.log(f"ERROR: {str(e)}")
+            self.status_label.configure(text="Error occurred", text_color="red")
+            self.log(f"[ERROR] {str(e)}")
+            messagebox.showerror("Production Error", f"Failed to decompress file:\n{str(e)}")
         finally:
+            self.progress_bar.stop()
+            self.progress_bar.set(0)
             self.btn_compress.configure(state="normal")
             self.btn_decompress.configure(state="normal")
 
